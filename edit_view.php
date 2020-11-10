@@ -7,7 +7,7 @@
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-        <link rel="shortcut icon" href="images/favicon.ico">
+        <link rel="shortcut icon" href="favicon.ico">
 
         <title>投稿編集</title>
         <style>
@@ -62,7 +62,7 @@
                     <div class="form-group row">
                         <label class="col-2 col-form-label">画像アップロード</label>
                         <div class="col-3">
-                            <input type="file" name="image" accept='image/*' onchange="previewImage(this);"　class="" required　>
+                            <input type="file" name="image" accept='image/*' onchange="previewImage(this);">
                         </div>
                         <div class="col-7">
                             <img id="preview" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" style="max-width:200px;">

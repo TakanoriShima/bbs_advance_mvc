@@ -4,6 +4,7 @@
     
     // 外部ファイルの読み込み
     require_once 'MessageDAO.php';
+    require_once 'CommentDAO.php';
     
     // セッション開始
     session_start();
@@ -13,6 +14,9 @@
     
     // 注目している投稿
     $message = "";
+    
+    // 注目している投稿に関するコメント一覧
+    $comments = "";
 
     // フラッシュメッセージを保存する変数
     $flash_message = "";
@@ -37,6 +41,7 @@
         
         // 注目してるメッセージインスタンスを取得
         $message = MessageDAO::get_message_by_id($message_id);
+        $comments = CommentDAO::get_comments_by_message_id($message_id);
         
         // view のインクルード
         include_once 'show_view.php';

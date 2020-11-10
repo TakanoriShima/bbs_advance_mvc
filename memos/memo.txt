@@ -4,12 +4,9 @@
 php --version
 # PHP 5.6.40 (cli) (built: Oct 31 2019 20:35:16) 
 
-# PDO 設定
+# MySQL/PDO 設定
 mysql --version
-#mysql  Ver 14.14 Distrib 5.5.62, for Linux (x86_64) using readline 5.1
-
-# 日本語設定
-sed -e "/utf8/d" -e "/client/d" -e "/^\[mysqld_safe\]$/i character-set-server=utf8\n\n[client]\ndefault-character-set=utf8" /etc/my.cnf |sudo tee /etc/my.cnf
+# mysql  Ver 14.14 Distrib 5.5.62, for Linux (x86_64) using readline 5.1
 
 php -m | grep pdo
 # pdo_mysql
@@ -18,17 +15,69 @@ php -m | grep pdo
 # pdo_mysql がない場合
 sudo yum -y install php71 php71-mbstring php71-pdo
 
+# 日本語設定
+sed -e "/utf8/d" -e "/client/d" -e "/^\[mysqld_safe\]$/i character-set-server=utf8\n\n[client]\ndefault-character-set=utf8" /etc/my.cnf |sudo tee /etc/my.cnf
+
+# 日本時間設定
+date
+echo "Asia/Tokyo" | sudo tee /etc/timezone
+sudo mysql_tzinfo_to_sql /usr/share/zoneinfo
+sudo cp /etc/sysconfig/clock /etc/sysconfig/clock.org
+sudo vi /etc/sysconfig/clock
+## 書き換え
+ZONE="Asia/Tokyo"
+UTC=true
+
+sudo ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+sudo reboot
+
+sudo service mysqld restart
+
 ###  MySQL ----
-create database bbs_basic_mvc character set utf8;
+create database bbs_advance_mvc character set utf8;
+use bbs_advance_mvc;
 
 create table messages(
-id int primary key auto_increment, 
-name varchar(50) not null,
-title varchar(50) not null,
-body varchar(100) not null,
-image varchar(100) not null,
-created_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id int primary key auto_increment, 
+    name varchar(50) not null,
+    title varchar(50) not null,
+    body varchar(100) not null,
+    image varchar(100) not null,
+    created_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 insert into messages(name, title, body, image) values("山田太郎", "初めての投稿", "秋ですね", "  | 14004332985fa6ae4af06c46.79060213.jpg");
 
+create table comments(
+    id int primary key auto_increment,
+    message_id int not null,
+    name varchar(50) not null,
+    body varchar(100) not null,
+    created_at timestamp default CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    foreign key(message_id) references messages(id)
+    on delete cascade
+    on update cascade
+);
+
+### アプリの起動 --------------
+1. エキスプローラ内の　index.php ファイルのアイコンを右クリック -> Run
+2. previewメニュー -> preview running application をクリック
+3. previewを最大化
+4. 以下のURLにアクセスする
+   https://xxxxxx.amazonaws.com/bbs_advance_mvc/index.php
+
+### git の使い方 --------------- 
+# 初回だけ実行し、リモートリポジトリ作成
+git init
+# 以下繰り返し
+git add .
+git commit -m "任意のコミットメッセージ"
+
+### github の使い方
+# githubでリモートリポジトリ作成
+# githubに接続するため、初回だけ実行
+git remote add origin xxxx.git
+git branch -M main
+
+# 以下commit の後繰り返し
+git push -u origin main

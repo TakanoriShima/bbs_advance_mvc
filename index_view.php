@@ -24,7 +24,10 @@
             <div class="row mt-2">
                 <h2 class="text-center col-sm-12"><?= $flash_message ?></h1>
             </div>
-            <div class="row mt-2">
+            <div class="row">
+                <p class="col-sm-1"><?= count($messages) ?>件</p>
+            </div>
+            <div class="row">
             <?php if(count($messages) !== 0){ ?> 
                 <table class="col-sm-12 table table-bordered table-striped">
                     <tr>

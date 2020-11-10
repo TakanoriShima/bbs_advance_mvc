@@ -55,7 +55,7 @@
                     <div class="form-group row">
                         <label class="col-2 col-form-label">画像アップロード</label>
                         <div class="col-3">
-                            <input type="file" name="image" accept='image/*' onchange="previewImage(this);"　class="" required　>
+                            <input type="file" name="image" accept='image/*' onchange="previewImage(this);"　class="" required>
                         </div>
                         <div class="col-7">
                             <img id="preview" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" style="max-width:200px;">

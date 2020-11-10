@@ -2,9 +2,10 @@
 // 外部ファイルの読み込み
 require_once 'Const.php';
 require_once 'Message.php';
+require_once 'Comment.php';
 
 // データベースとやり取りを行う便利なクラス
-class MessageDAO{
+class CommentDAO{
     
     // データベースと接続を行うメソッド
     private static function get_connection(){
@@ -23,55 +24,30 @@ class MessageDAO{
         $stmp = null;
     }
     
-    // 全テーブル情報を取得するメソッド
-    public static function get_all_messages(){
+    // 特定の投稿の全コメント情報を取得するメソッド
+    public static function get_comments_by_message_id($message_id){
         $pdo = self::get_connection();
-        $stmt = $pdo->query('SELECT * FROM messages ORDER BY id DESC');
+        $stmt = $pdo->prepare('SELECT * FROM comments WHERE message_id=:message_id');
+        // バインド処理
+        $stmt->bindParam(':message_id', $message_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
         // フェッチの結果を、messageクラスのインスタンスにマッピングする
-        $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'Message');
-        $messages = $stmt->fetchAll();
+        $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'Comment');
+        $comments = $stmt->fetchAll();
         self::close_connection($pdo, $stmp);
         // メッセージクラスのインスタンスの配列を返す
-        return $messages;
-    }
-    
-    // id値からデータを抜き出すメソッド
-    public static function get_message_by_id($id){
-        $pdo = self::get_connection();
-        $stmt = $pdo->prepare('SELECT * FROM messages WHERE id = :id');
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'Message');
-        $message = $stmt->fetch();
-        self::close_connection($pdo, $stmp);
-        // メッセージクラスのインスタンスを返す
-        return $message;
-    }
-    
-    // 画像ファイル名を取得するメソッド（uploadフォルダ内のファイルを物理削除するため）
-    public static function get_image_name_by_id($id){
-        $pdo = self::get_connection();
-        $stmt = $pdo->prepare('SELECT * FROM messages WHERE id = :id');
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, 'Message');
-        $message = $stmt->fetch();
-
-        self::close_connection($pdo, $stmp);
-        
-        return $message->image;
+        return $comments;
     }
     
     // データを1件登録するメソッド
-    public static function insert($message){
+    public static function insert($comment){
         $pdo = self::get_connection();
-        $stmt = $pdo -> prepare("INSERT INTO messages (name, title, body, image) VALUES (:name, :title, :body, :image)");
+        $stmt = $pdo -> prepare("INSERT INTO comments (message_id, name, body) VALUES (:message_id, :name, :body)");
         // バインド処理
-        $stmt->bindParam(':name', $message->name, PDO::PARAM_STR);
-        $stmt->bindParam(':title', $message->title, PDO::PARAM_STR);
-        $stmt->bindParam(':body', $message->body, PDO::PARAM_STR);
-        $stmt->bindParam(':image', $message->image, PDO::PARAM_STR);
+        $stmt->bindParam(':message_id', $comment->message_id, PDO::PARAM_INT);
+        $stmt->bindParam(':name', $comment->name, PDO::PARAM_STR);
+        $stmt->bindParam(':body', $comment->body, PDO::PARAM_STR);
         $stmt->execute();
         self::close_connection($pdo, $stmp);
     }
@@ -80,12 +56,7 @@ class MessageDAO{
     // データを更新するメソッド
     public static function update($message){
         $pdo = self::get_connection();
-        $old_image = self::get_image_name_by_id($message->id);
-        
-        // 画像が選択されていないのであれば
-        if($message->image === ""){
-            $message->image = $old_image;
-        }
+        $image = self::get_image_name_by_id($message->id);
         $stmt = $pdo->prepare('UPDATE messages SET title=:title, body=:body, image=:image WHERE id = :id');
                         
         $stmt->bindParam(':title', $message->title, PDO::PARAM_STR);
@@ -97,8 +68,8 @@ class MessageDAO{
         self::close_connection($pdo, $stmp);
         
         // 画像の物理削除
-        if($old_image !== $message->image){
-            unlink(IMAGE_DIR . $old_image);
+        if($image !== $message->image){
+            unlink(IMAGE_DIR . $image);
         }
     }
     
@@ -133,7 +104,7 @@ class MessageDAO{
             
             return $image;
         }else{
-            return "";
+            return null;
         }
     }
 }
